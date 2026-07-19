@@ -220,4 +220,21 @@ class InventoryProvider extends ChangeNotifier {
     }
     return false;
   }
+
+  Future<bool> actualizarEstadoPedido(String codigoCorto, String nuevoEstado) async {
+    try {
+      final url = Uri.parse('$_baseUrl/pedidos/$codigoCorto.json');
+      final response = await http.patch(
+        url,
+        body: json.encode({"estado": nuevoEstado}),
+      );
+
+      if (response.statusCode == 200) {
+        await cargarDatos(); 
+        return true;
+      }
+    } catch (e) {
+    }
+    return false;
+  }
 }

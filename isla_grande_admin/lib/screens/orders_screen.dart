@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/inventory_provider.dart';
+import '../models/sistema_inventario.dart';
 import '../theme/app_theme.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -15,37 +18,30 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   Widget build(BuildContext context) {
     
-    final List<Map<String, dynamic>> mockPedidos = [
-      {
-        'id': '1045',
-        'cliente': 'John Smith',
-        'estado': 'pendiente',
-        'total': 20.00,
-        'fecha': '09:32 a. m.',
-        'articulos': 2,
-      },
-      {
-        'id': '1042',
-        'cliente': 'Ana Ramírez',
-        'estado': 'concretado',
-        'total': 10.00,
-        'fecha': '04:22 p. m.',
-        'articulos': 1,
-      },
-      {
-        'id': '1041',
-        'cliente': 'Thomas Müller',
-        'estado': 'rechazado',
-        'total': 28.00,
-        'fecha': '02:10 p. m.',
-        'articulos': 2,
-      },
-    ];
+    final provider = Provider.of<InventoryProvider>(context);
+    final List<Pedido> bdPedidos = provider.sistema?.pedidos.values.toList() ?? [];
+
+    final List<Map<String, dynamic>> mockPedidos = bdPedidos.map((p) {
+      String hora = "${p.fecha.hour > 12 ? p.fecha.hour - 12 : p.fecha.hour}:${p.fecha.minute.toString().padLeft(2, '0')} ${p.fecha.hour >= 12 ? 'p. m.' : 'a. m.'}";
+      String fechaCorta = "${p.fecha.day}/${p.fecha.month}/${p.fecha.year}";
+      
+      return {
+        'id': p.codigoCorto,
+        'cliente': p.cliente,
+        'estado': p.estado,
+        'total': p.totalDivisas,
+        'hora': hora,
+        'fecha': fechaCorta,
+        'fecha_ui': "$hora · ${p.articulos.length} artículo(s)",
+        'articulos': p.articulos.length,
+        '_modelo_original': p, 
+      };
+    }).toList();
 
     final List<Map<String, dynamic>> pedidosMostrados = mockPedidos.where((p) {
       final matchesTab = _showPendientes 
-          ? p['estado'] == 'pendiente' 
-          : p['estado'] != 'pendiente';
+          ? p['estado'].toString().toLowerCase() == 'pendiente' 
+          : p['estado'].toString().toLowerCase() != 'pendiente';
       final matchesSearch = p['cliente'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
                             p['id'].toString().contains(_searchQuery);
       return matchesTab && matchesSearch;

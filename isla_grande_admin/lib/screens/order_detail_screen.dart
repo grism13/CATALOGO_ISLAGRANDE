@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/inventory_provider.dart';
+import '../models/sistema_inventario.dart';
 import '../theme/app_theme.dart';
 
 class OrderDetailScreen extends StatelessWidget {
@@ -24,14 +27,14 @@ class OrderDetailScreen extends StatelessWidget {
       statusTextColor = AppTheme.rechazado;
     }
 
-    final List<Map<String, dynamic>> mockArticulos = [
-      {
-        'nombre': 'Banana Boat Kids Protector Solar +50 spf',
-        'cantidad': 2,
-        'precioUnitario': 20.00,
-        'subtotal': 40.00,
-      },
-    ];
+    final Pedido pedidoBD = pedido['_modelo_original'] as Pedido;
+
+    final List<Map<String, dynamic>> mockArticulos = pedidoBD.articulos.map((art) => {
+      'nombre': art.nombre,
+      'cantidad': art.cantidad,
+      'precioUnitario': art.precioUnitario,
+      'subtotal': art.subtotal,
+    }).toList();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColorLight,
@@ -253,6 +256,40 @@ class OrderDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 40),
+            
+            if (pedido['estado'] == 'pendiente')
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.rechazado,
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                    ),
+                    onPressed: () async {
+                      final provider = Provider.of<InventoryProvider>(context, listen: false);
+                      await provider.actualizarEstadoPedido(pedidoBD.codigoCorto, 'rechazado');
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                    child: const Text('RECHAZAR', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.concretado,
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                    ),
+                    onPressed: () async {
+                      final provider = Provider.of<InventoryProvider>(context, listen: false);
+                      await provider.actualizarEstadoPedido(pedidoBD.codigoCorto, 'concretado');
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                    child: const Text('CONCRETAR', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  ),
+                ],
+              ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
