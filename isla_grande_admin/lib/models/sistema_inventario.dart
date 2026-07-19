@@ -19,22 +19,32 @@ class SistemaInventario {
     required this.productos,
   });
 
-  factory SistemaInventario.fromJson(Map<String, dynamic> json) =>
-      SistemaInventario(
-        configuracion: Configuracion.fromJson(json["configuracion"] ?? {}),
-        metricas: json["metricas"] != null
-            ? Map.from(json["metricas"]).map((k, v) =>
-                MapEntry<String, MetricaMes>(k, MetricaMes.fromJson(v)))
-            : {},
-        pedidos: json["pedidos"] != null
-            ? Map.from(json["pedidos"]).map((k, v) =>
-                MapEntry<String, Pedido>(k, Pedido.fromJson(v)))
-            : {},
-        productos: json["productos"] != null
-            ? Map.from(json["productos"]).map((k, v) =>
-                MapEntry<String, Producto>(k, Producto.fromJson(v)))
-            : {},
-      );
+  factory SistemaInventario.fromJson(Map<String, dynamic> json) {
+    Map<String, Pedido> parsePedidos(dynamic pedidosJson) {
+      if (pedidosJson == null) return {};
+      if (pedidosJson is List) {
+        final Map<String, Pedido> map = {};
+        for (int i = 0; i < pedidosJson.length; i++) {
+          if (pedidosJson[i] != null) {
+            map[i.toString()] = Pedido.fromJson(pedidosJson[i]);
+          }
+        }
+        return map;
+      }
+      return Map.from(pedidosJson).map((k, v) => MapEntry<String, Pedido>(k.toString(), Pedido.fromJson(v)));
+    }
+
+    return SistemaInventario(
+      configuracion: Configuracion.fromJson(json["configuracion"] ?? {}),
+      metricas: json["metricas"] != null
+          ? Map.from(json["metricas"]).map((k, v) => MapEntry<String, MetricaMes>(k, MetricaMes.fromJson(v)))
+          : {},
+      pedidos: parsePedidos(json["pedidos"]),
+      productos: json["productos"] != null
+          ? Map.from(json["productos"]).map((k, v) => MapEntry<String, Producto>(k, Producto.fromJson(v)))
+          : {},
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "configuracion": configuracion.toJson(),
@@ -124,6 +134,7 @@ class MetricaDia {
 }
 
 class Pedido {
+  String id;
   List<Articulo> articulos;
   String cliente;
   String codigoCorto;
@@ -134,6 +145,7 @@ class Pedido {
   double totalDivisas;
 
   Pedido({
+    this.id = '',
     required this.articulos,
     required this.cliente,
     required this.codigoCorto,

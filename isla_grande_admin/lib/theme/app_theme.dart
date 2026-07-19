@@ -20,7 +20,6 @@ class AppTheme {
     primaryColor: primaryColor,
     scaffoldBackgroundColor: backgroundColor,
     
-    // Aplicar tipografía a toda la aplicación
     textTheme: ThemeData.light().textTheme.apply(
       fontFamily: 'YanoneKaffeesatz',
       bodyColor: darkBlue,

@@ -31,15 +31,15 @@ class _MainScreenState extends State<MainScreen> {
         color: AppTheme.darkBlue,
         buttonBackgroundColor: AppTheme.lightYellow,
         index: _currentIndex,
-        items: const [
+        items: [
           CurvedNavigationBarItem(
-            child: Icon(Icons.home_outlined, color: AppTheme.darkBlue),
+            child: Icon(Icons.home_outlined, color: _currentIndex == 0 ? AppTheme.darkBlue : AppTheme.lightYellow),
           ),
           CurvedNavigationBarItem(
-            child: Icon(Icons.grid_view_outlined, color: AppTheme.darkBlue),
+            child: Icon(Icons.grid_view_outlined, color: _currentIndex == 1 ? AppTheme.darkBlue : AppTheme.lightYellow),
           ),
           CurvedNavigationBarItem(
-            child: Icon(Icons.shopping_bag_outlined, color: AppTheme.darkBlue),
+            child: Icon(Icons.shopping_bag_outlined, color: _currentIndex == 2 ? AppTheme.darkBlue : AppTheme.lightYellow),
           ),
         ],
         onTap: (index) {

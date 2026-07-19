@@ -37,48 +37,72 @@ class OrderDetailScreen extends StatelessWidget {
     }).toList();
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColorLight,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Custom Header
-            Container(
-              padding: const EdgeInsets.only(
-                top: 50,
-                left: 20,
-                right: 20,
-                bottom: 30,
-              ),
-              decoration: const BoxDecoration(
-                color: AppTheme.darkBlue,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: AppTheme.lightYellow,
+      backgroundColor: AppTheme.darkBlue,
+      body: SafeArea(
+        bottom: false,
+        child: Container(
+          color: AppTheme.backgroundColorLight,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                Container(
+                  height: 120,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.darkBlue,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
                     ),
                   ),
-                  Image.asset(
-                    'assets/images/logotipo.png',
-                    height: 40,
-                    fit: BoxFit.contain,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: -10,
+                        left: -10,
+                        child: Image.asset('assets/images/8.png', width: 90, fit: BoxFit.contain),
+                      ),
+                      Positioned(
+                        bottom: -15,
+                        left: -10,
+                        child: Image.asset('assets/images/6.png', width: 70, fit: BoxFit.contain),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Image.asset('assets/images/7.png', width: 70, fit: BoxFit.contain),
+                      ),
+                      Center(
+                        child: Container(
+                          height: 60,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            color: Colors.transparent, 
+                          ),
+                          child: Image.asset('assets/images/ISLA GRANDE.png', fit: BoxFit.contain),
+                        ),
+                      ),
+                      Positioned(
+                        top: 15,
+                        left: 20,
+                        child: GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: AppTheme.lightYellow,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
             const SizedBox(height: 30),
 
-            // Título y Estado
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -230,7 +254,7 @@ class OrderDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // Total
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -244,13 +268,26 @@ class OrderDetailScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
-                    '\$${pedido['total'].toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '\$${pedido['total'].toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Bs ${pedido['totalBs'].toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -269,7 +306,7 @@ class OrderDetailScreen extends StatelessWidget {
                     ),
                     onPressed: () async {
                       final provider = Provider.of<InventoryProvider>(context, listen: false);
-                      await provider.actualizarEstadoPedido(pedidoBD.codigoCorto, 'rechazado');
+                      await provider.actualizarEstadoPedido(pedidoBD.id, 'rechazado');
                       if (context.mounted) Navigator.pop(context);
                     },
                     child: const Text('RECHAZAR', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1)),
@@ -282,17 +319,48 @@ class OrderDetailScreen extends StatelessWidget {
                     ),
                     onPressed: () async {
                       final provider = Provider.of<InventoryProvider>(context, listen: false);
-                      await provider.actualizarEstadoPedido(pedidoBD.codigoCorto, 'concretado');
+                      await provider.actualizarEstadoPedido(pedidoBD.id, 'concretado');
                       if (context.mounted) Navigator.pop(context);
                     },
                     child: const Text('CONCRETAR', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1)),
                   ),
                 ],
               ),
+            
+            if (pedido['estado'] == 'rechazado')
+              Center(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                  ),
+                  icon: const Icon(Icons.delete, color: Colors.white),
+                  label: const Text('BORRAR PEDIDO', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (c) => AlertDialog(
+                        title: const Text('Borrar Pedido'),
+                        content: const Text('¿Estás seguro de eliminar este pedido? Esta acción no se puede deshacer.'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
+                          TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Eliminar', style: TextStyle(color: Colors.red))),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      final provider = Provider.of<InventoryProvider>(context, listen: false);
+                      await provider.eliminarPedido(pedidoBD.id);
+                      if (context.mounted) Navigator.pop(context);
+                    }
+                  },
+                ),
+              ),
             const SizedBox(height: 30),
           ],
         ),
-      ),
+      ))),
     );
   }
 }

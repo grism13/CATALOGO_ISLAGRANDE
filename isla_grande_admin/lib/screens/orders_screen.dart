@@ -20,6 +20,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     
     final provider = Provider.of<InventoryProvider>(context);
     final List<Pedido> bdPedidos = provider.sistema?.pedidos.values.toList() ?? [];
+    final double tasa = provider.sistema?.configuracion.tasaBcv ?? 0.0;
 
     final List<Map<String, dynamic>> mockPedidos = bdPedidos.map((p) {
       String hora = "${p.fecha.hour > 12 ? p.fecha.hour - 12 : p.fecha.hour}:${p.fecha.minute.toString().padLeft(2, '0')} ${p.fecha.hour >= 12 ? 'p. m.' : 'a. m.'}";
@@ -30,6 +31,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         'cliente': p.cliente,
         'estado': p.estado,
         'total': p.totalDivisas,
+        'totalBs': p.totalDivisas * tasa,
         'hora': hora,
         'fecha': fechaCorta,
         'fecha_ui': "$hora · ${p.articulos.length} artículo(s)",
@@ -40,8 +42,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
     final List<Map<String, dynamic>> pedidosMostrados = mockPedidos.where((p) {
       final matchesTab = _showPendientes 
-          ? p['estado'].toString().toLowerCase() == 'pendiente' 
-          : p['estado'].toString().toLowerCase() != 'pendiente';
+          ? p['estado'].toString().trim().toLowerCase() == 'pendiente' 
+          : p['estado'].toString().trim().toLowerCase() != 'pendiente';
       final matchesSearch = p['cliente'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
                             p['id'].toString().contains(_searchQuery);
       return matchesTab && matchesSearch;
@@ -68,7 +70,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       ),
       body: Column(
         children: [
-          // Buscador
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
             child: Container(
@@ -109,14 +111,52 @@ class _OrdersScreenState extends State<OrdersScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 25),
-                  const Text(
-                    'PEDIDOS',
-                    style: TextStyle(
-                      color: AppTheme.darkBlue,
-                      fontSize: 45,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 4,
-                    ),
+                  const SizedBox(height: 25),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      const Center(
+                        child: Text(
+                          'PEDIDOS',
+                          style: TextStyle(
+                            color: AppTheme.darkBlue,
+                            fontSize: 45,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 4,
+                          ),
+                        ),
+                      ),
+                      if (!_showPendientes)
+                        Positioned(
+                          right: 20,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.delete_sweep, color: Colors.red),
+                              onPressed: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (c) => AlertDialog(
+                                    title: const Text('Limpiar Historial'),
+                                    content: const Text('¿Estás seguro de eliminar todos los pedidos finalizados?'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
+                                      TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Limpiar', style: TextStyle(color: Colors.red))),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true) {
+                                  final provider = Provider.of<InventoryProvider>(context, listen: false);
+                                  await provider.limpiarPedidosFinalizados();
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   
@@ -274,13 +314,26 @@ class _OrderCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  '\$${pedido['total'].toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: AppTheme.darkBlue,
-                    fontSize: 23,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '\$${pedido['total'].toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: AppTheme.darkBlue,
+                        fontSize: 23,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Bs ${pedido['totalBs'].toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -125,9 +125,10 @@ class InventoryProvider extends ChangeNotifier {
         
         if (sistema?.pedidos != null) {
           sistema!.pedidos.forEach((key, pedido) {
-            if (pedido.estado == 'pendiente') {
+            pedido.id = key;
+            if (pedido.estado.trim().toLowerCase() == 'pendiente') {
               pedidosPendientes++;
-            } else if (pedido.estado == 'finalizado' || pedido.estado == 'concretado') {
+            } else if (pedido.estado.trim().toLowerCase() == 'finalizado' || pedido.estado.trim().toLowerCase() == 'concretado') {
               pedidosConcretados++;
               ingresos += pedido.totalDivisas;
             }
@@ -221,9 +222,9 @@ class InventoryProvider extends ChangeNotifier {
     return false;
   }
 
-  Future<bool> actualizarEstadoPedido(String codigoCorto, String nuevoEstado) async {
+  Future<bool> actualizarEstadoPedido(String pedidoId, String nuevoEstado) async {
     try {
-      final url = Uri.parse('$_baseUrl/pedidos/$codigoCorto.json');
+      final url = Uri.parse('$_baseUrl/pedidos/$pedidoId.json');
       final response = await http.patch(
         url,
         body: json.encode({"estado": nuevoEstado}),
@@ -236,5 +237,30 @@ class InventoryProvider extends ChangeNotifier {
     } catch (e) {
     }
     return false;
+  }
+
+  Future<bool> eliminarPedido(String pedidoId) async {
+    try {
+      final url = Uri.parse('$_baseUrl/pedidos/$pedidoId.json');
+      final response = await http.delete(url);
+
+      if (response.statusCode == 200) {
+        await cargarDatos();
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  Future<void> limpiarPedidosFinalizados() async {
+    if (sistema?.pedidos == null) return;
+    
+    final finalizados = sistema!.pedidos.entries
+        .where((entry) => entry.value.estado != 'pendiente')
+        .toList();
+        
+    for (var entry in finalizados) {
+      await eliminarPedido(entry.key);
+    }
   }
 }

@@ -22,12 +22,18 @@ class ProductDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 30),
               child: Hero(
                 tag: 'product_image_${producto.id}',
-                child: FadeInImage(
+                child: SizedBox(
                    height: 180,
-                   placeholder: const AssetImage('assets/images/no-image.jpg'),
-                   image: NetworkImage(producto.url.isNotEmpty ? producto.url : 'https://via.placeholder.com/400'),
-                   fit: BoxFit.contain,
-                   imageErrorBuilder: (c, e, s) => Image.asset('assets/images/no-image.jpg', height: 180, fit: BoxFit.contain),
+                   child: producto.url.isNotEmpty
+                    ? FadeInImage(
+                        placeholder: const AssetImage('assets/images/placeholder.png'),
+                        image: NetworkImage(producto.url),
+                        fit: BoxFit.contain,
+                        imageErrorBuilder: (context, error, stackTrace) {
+                          return Image.asset('assets/images/placeholder.png', fit: BoxFit.contain);
+                        },
+                      )
+                    : Image.asset('assets/images/placeholder.png', fit: BoxFit.contain),
                 ),
               ),
             ),
@@ -226,7 +232,6 @@ class ProductDetailScreen extends StatelessWidget {
   Widget _buildCustomHeader(BuildContext context, Producto producto) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 50, bottom: 30, left: 20, right: 20),
       decoration: const BoxDecoration(
         color: AppTheme.darkBlue,
         borderRadius: BorderRadius.only(
@@ -234,29 +239,46 @@ class ProductDetailScreen extends StatelessWidget {
           bottomRight: Radius.circular(30),
         ),
       ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Row(
-                  children: const [
-                    Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-                    Text('Volver', style: TextStyle(color: Colors.white, fontSize: 16)),
-                  ],
-                ),
-              ),
-              Row(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -10,
+              left: -10,
+              child: Image.asset('assets/images/8.png', width: 90, fit: BoxFit.contain),
+            ),
+            Positioned(
+              bottom: -15,
+              left: -10,
+              child: Image.asset('assets/images/6.png', width: 70, fit: BoxFit.contain),
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Image.asset('assets/images/7.png', width: 70, fit: BoxFit.contain),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 50, bottom: 30, left: 20, right: 20),
+              child: Column(
                 children: [
-                  Image.asset(
-                    'assets/images/logotipo.png',
-                    height: 30,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 30),
-                  ),
-                  const SizedBox(width: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                            Text('Volver', style: TextStyle(color: Colors.white, fontSize: 16)),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: [
                   IconButton(
                     icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
                     onPressed: () {
@@ -327,7 +349,11 @@ class ProductDetailScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
+      ), // Column
+    ), // Padding
+  ],
+), // Stack
+      ), // ClipRRect
     );
   }
 }

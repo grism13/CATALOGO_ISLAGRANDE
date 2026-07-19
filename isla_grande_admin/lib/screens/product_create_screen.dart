@@ -123,7 +123,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
               'assets/images/logotipo.png',
               height: 40,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 40),
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: AppTheme.rechazado, size: 40),
             ),
           ),
         ],
@@ -143,8 +143,8 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                         children: [
                           _urlCtrl.text.isNotEmpty
                               ? Image.network(_urlCtrl.text, height: 180, fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) => Image.asset('assets/images/no-image.jpg', height: 180))
-                              : Image.asset('assets/images/no-image.jpg', height: 180, fit: BoxFit.contain),
+                                  errorBuilder: (context, error, stackTrace) => Image.asset('assets/images/placeholder.png', height: 180))
+                              : Image.asset('assets/images/placeholder.png', height: 180, fit: BoxFit.contain),
                           if (_isUploadingImage)
                             const CircularProgressIndicator(color: AppTheme.primaryColor),
                         ],

@@ -165,15 +165,17 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                         children: [
                           Hero(
                             tag: 'product_image_${producto.id}',
-                            child: FadeInImage(
-                              height: 180,
-                              placeholder: const AssetImage('assets/images/no-image.jpg'),
-                              image: NetworkImage(producto.url.isNotEmpty ? producto.url : 'https://via.placeholder.com/200'),
-                              fit: BoxFit.contain,
-                              imageErrorBuilder: (context, error, stackTrace) {
-                                return Image.asset('assets/images/no-image.jpg', height: 180, fit: BoxFit.contain);
-                              },
-                            ),
+                            child: _urlCtrl.text.isNotEmpty
+                                ? FadeInImage(
+                                    placeholder: const AssetImage('assets/images/placeholder.png'),
+                                    image: NetworkImage(_urlCtrl.text),
+                                    height: 200,
+                                    fit: BoxFit.contain,
+                                    imageErrorBuilder: (context, error, stackTrace) {
+                                      return Image.asset('assets/images/placeholder.png', height: 200, fit: BoxFit.contain);
+                                    },
+                                  )
+                                : Image.asset('assets/images/placeholder.png', height: 200, fit: BoxFit.contain),
                           ),
                           if (_isUploadingImage)
                             const CircularProgressIndicator(color: AppTheme.primaryColor),

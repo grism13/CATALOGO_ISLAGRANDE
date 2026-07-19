@@ -16,10 +16,7 @@ class InventoryScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.darkBlue, 
         elevation: 4,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppTheme.lightYellow, size: 30), 
-          onPressed: () {},
-        ),
+        automaticallyImplyLeading: false,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -156,19 +153,27 @@ class InventoryScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: inventoryProvider.productosFiltrados.length,
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.65, 
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                            ),
-                            itemBuilder: (context, index) {
-                              final producto = inventoryProvider.productosFiltrados[index];
-                              return _ProductCard(producto: producto);
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              int crossAxisCount = 2;
+                              if (constraints.maxWidth >= 600) crossAxisCount = 3;
+                              if (constraints.maxWidth >= 900) crossAxisCount = 4;
+                              if (constraints.maxWidth >= 1200) crossAxisCount = 5;
+                              return GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: inventoryProvider.productosFiltrados.length,
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  childAspectRatio: 0.65, 
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final producto = inventoryProvider.productosFiltrados[index];
+                                  return _ProductCard(producto: producto);
+                                },
+                              );
                             },
                           ),
                         ],
@@ -302,14 +307,16 @@ class _ProductCard extends StatelessWidget {
               child: Center(
                 child: Hero(
                   tag: 'product_image_${producto.id}',
-                  child: FadeInImage(
-                    placeholder: const AssetImage('assets/images/no-image.jpg'),
-                    image: NetworkImage(producto.url.isNotEmpty ? producto.url : 'https://via.placeholder.com/100'),
-                    fit: BoxFit.contain,
-                    imageErrorBuilder: (context, error, stackTrace) {
-                      return Image.asset('assets/images/no-image.jpg', fit: BoxFit.contain);
-                    },
-                  ),
+                  child: producto.url.isNotEmpty
+                      ? FadeInImage(
+                          placeholder: const AssetImage('assets/images/placeholder.png'),
+                          image: NetworkImage(producto.url),
+                          fit: BoxFit.contain,
+                          imageErrorBuilder: (context, error, stackTrace) {
+                            return Image.asset('assets/images/placeholder.png', fit: BoxFit.contain);
+                          },
+                        )
+                      : Image.asset('assets/images/placeholder.png', fit: BoxFit.contain),
                 ),
               ),
             ),

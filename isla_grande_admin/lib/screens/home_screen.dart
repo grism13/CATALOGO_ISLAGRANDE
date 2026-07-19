@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/inventory_provider.dart';
 import '../models/sistema_inventario.dart';
+import 'about_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,30 +14,57 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.darkBlue, 
-      appBar: AppBar(
-        backgroundColor: AppTheme.darkBlue, 
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu, color: AppTheme.lightYellow, size: 30),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-            child: Container(
-              height: 92, 
-              alignment: Alignment.center,
-              child: Image.asset(
-                'assets/images/ISLA GRANDE.png',
-                fit: BoxFit.contain,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              height: 120,
+              width: double.infinity,
+              color: AppTheme.darkBlue,
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: -10,
+                    left: -10,
+                    child: Image.asset('assets/images/8.png', width: 90, fit: BoxFit.contain),
+                  ),
+                  Positioned(
+                    bottom: -15,
+                    left: -10,
+                    child: Image.asset('assets/images/6.png', width: 70, fit: BoxFit.contain),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Image.asset('assets/images/7.png', width: 70, fit: BoxFit.contain),
+                  ),
+                  Center(
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        color: Colors.transparent, 
+                      ),
+                      child: Image.asset('assets/images/ISLA GRANDE.png', fit: BoxFit.contain),
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: IconButton(
+                      icon: const Icon(Icons.menu, color: AppTheme.lightYellow, size: 35),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AboutScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 30),
+            const SizedBox(height: 10),
 
           Expanded(
             child: Container(
@@ -178,7 +206,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 }
@@ -307,14 +335,16 @@ class _LowStockItem extends StatelessWidget {
                 ),
                 child: Hero(
                   tag: 'lowstock_${producto.id}',
-                  child: FadeInImage(
-                    placeholder: const AssetImage('assets/images/no-image.jpg'),
-                    image: NetworkImage(producto.url.isNotEmpty ? producto.url : 'https://via.placeholder.com/100'),
-                    fit: BoxFit.contain,
-                    imageErrorBuilder: (context, error, stackTrace) {
-                      return Image.asset('assets/images/no-image.jpg', fit: BoxFit.contain);
-                    },
-                  ),
+                  child: producto.url.isNotEmpty
+                      ? FadeInImage(
+                          placeholder: const AssetImage('assets/images/placeholder.png'),
+                          image: NetworkImage(producto.url),
+                          fit: BoxFit.contain,
+                          imageErrorBuilder: (context, error, stackTrace) {
+                            return Image.asset('assets/images/placeholder.png', fit: BoxFit.contain);
+                          },
+                        )
+                      : Image.asset('assets/images/placeholder.png', fit: BoxFit.contain),
                 ),
               ),
             ),
