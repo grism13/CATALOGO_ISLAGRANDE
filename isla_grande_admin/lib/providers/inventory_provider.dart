@@ -83,7 +83,7 @@ class InventoryProvider extends ChangeNotifier {
 
   Future<String?> subirImagenImgBB(String imagePath) async {
     try {
-      final request = http.MultipartRequest('POST', Uri.parse('https://api.imgbb.com/1/upload?key=77e66b2f24cb4f177a1c1a71bd7207ca'));
+      final request = http.MultipartRequest('POST', Uri.parse('https://api.imgbb.com/1/upload?key=930febc68f092b09512ebd24c6cd5537'));
       request.files.add(await http.MultipartFile.fromPath('image', imagePath));
       
       final response = await request.send();

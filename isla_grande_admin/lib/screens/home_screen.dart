@@ -112,7 +112,7 @@ class HomeScreen extends StatelessWidget {
                                     const Text('Ver Bs', style: TextStyle(color: Colors.white, fontSize: 12)),
                                     Switch(
                                       value: inventoryProvider.mostrarEnBolivares,
-                                      activeColor: AppTheme.lightYellow,
+                                      activeThumbColor: AppTheme.lightYellow,
                                       onChanged: (val) {
                                         inventoryProvider.toggleMoneda();
                                       },

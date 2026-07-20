@@ -206,7 +206,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                             icon: Icons.grid_view,
                             label: 'CATEGORIA',
                             child: DropdownButtonFormField<String>(
-                              value: _categoriaSeleccionada,
+                              initialValue: _categoriaSeleccionada,
                               decoration: _buildInputDecoration(),
                               icon: const Icon(Icons.keyboard_arrow_down),
                               items: _categorias.map((cat) {
@@ -285,7 +285,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                               ),
                               child: Switch(
                                 value: _disponible,
-                                activeColor: AppTheme.darkBlue,
+                                activeThumbColor: AppTheme.darkBlue,
                                 activeTrackColor: AppTheme.lightYellow,
                                 onChanged: (val) {
                                   setState(() {

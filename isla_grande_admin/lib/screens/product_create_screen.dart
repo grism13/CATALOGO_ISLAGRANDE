@@ -174,7 +174,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                             icon: Icons.grid_view,
                             label: 'CATEGORIA',
                             child: DropdownButtonFormField<String>(
-                              value: _categoriaSeleccionada,
+                              initialValue: _categoriaSeleccionada,
                               decoration: _buildInputDecoration(),
                               icon: const Icon(Icons.keyboard_arrow_down),
                               items: _categorias.map((cat) {
@@ -253,7 +253,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
                               ),
                               child: Switch(
                                 value: _disponible,
-                                activeColor: AppTheme.darkBlue,
+                                activeThumbColor: AppTheme.darkBlue,
                                 activeTrackColor: AppTheme.lightYellow,
                                 onChanged: (val) {
                                   setState(() {
