@@ -235,7 +235,7 @@ function renderHome() {
     const el = $('welcome-name');
     el.textContent = State.clienteNombre
         ? `${State.clienteNombre}!`
-        : 'Bienvenido!';
+        : 'Welcome!';
     renderCategoryTabs();
     renderProductGrid();
 }
@@ -292,15 +292,12 @@ function renderProductGrid() {
         let html = '', idx = 0;
         sorted.forEach(cat => {
             html += `<h2 class="category-section-title">${cat.toUpperCase()}</h2>`;
-            html += `<div class="horizontal-scroll-container">`;
             groups[cat].forEach(([id, p]) => {
                 html += productCardHTML(id, p, idx++);
             });
-            html += `</div>`;
-            html += `<button class="btn-show-all" data-target="${cat}">Mostrar todos los ${cat}</button>`;
         });
         grid.innerHTML = html;
-        grid.classList.add('is-todos');
+        grid.classList.remove('is-todos');
     } else {
         grid.innerHTML = items.map(([id, p], i) => productCardHTML(id, p, i)).join('');
         grid.classList.remove('is-todos');
@@ -308,13 +305,36 @@ function renderProductGrid() {
     grid.addEventListener('click', onProductCardClick);
 }
 function onProductCardClick(e) {
-    const btnShowAll = e.target.closest('.btn-show-all');
-    if (btnShowAll) {
-        State.categoriaActiva = btnShowAll.dataset.target;
-        $$('.category-tab').forEach(t => t.classList.toggle('active', t.dataset.category === State.categoriaActiva));
-        renderProductGrid();
-        // Scroll slightly up so tab is visible
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    const btnAdd = e.target.closest('.product-card-add-btn');
+    if (btnAdd) {
+        e.stopPropagation();
+        const card = btnAdd.closest('.product-card');
+        if (card) {
+            // Quick add 1 unit to cart
+            const productId = card.dataset.pid;
+            const p = State.productos[productId];
+            if (p && p.stock > 0) {
+                const existing = State.carrito.find(i => i.idProducto === productId);
+                if (existing) {
+                    if (existing.cantidad < p.stock) {
+                        existing.cantidad += 1;
+                        showToast(`Añadido +1 ${translateName(p.nombre)}`, 'success');
+                    } else {
+                        showToast('No hay más stock disponible', 'warning');
+                    }
+                } else {
+                    State.carrito.push({
+                        idProducto: productId,
+                        cantidad: 1,
+                        precioUnitario: p.precio,
+                        timestamp: Date.now()
+                    });
+                    showToast(`${translateName(p.nombre)} añadido`, 'success');
+                }
+                saveCart();
+                updateCartBadge();
+            }
+        }
         return;
     }
 
@@ -329,17 +349,28 @@ const IMG_FALLBACK = `data:image/svg+xml,${encodeURIComponent(
 )}`;
 function productCardHTML(id, p, index) {
     const delay = Math.min(index * 40, 350);
+    // Extraemos la unidad de la descripción o si no, usamos el peso si existe. (Por ahora, ponemos 750g como placeholder si no sabemos)
+    const weightMatch = p.descripcion.match(/(\d+\s*(?:g|kg|ml|l|oz))/i);
+    const weightTag = weightMatch ? weightMatch[1].toUpperCase() : '750 G'; 
+    const stockTag = p.stock > 0 ? (p.stock < 5 ? `¡Solo ${p.stock}!` : 'Stock') : 'Agotado';
+
     return `
-            <div class="product-card" data-pid="${id}" style="animation-delay:${delay}ms">
+    <div class="product-card" data-pid="${id}" style="animation-delay:${delay}ms">
+        <div class="product-card-tags">
+            <span class="card-tag weight">${weightTag}</span>
+            <span class="card-tag stock">${stockTag}</span>
+        </div>
         <img class="product-card-image" src="${p.url}" alt="${translateName(p.nombre)}"
              loading="lazy" onerror="this.onerror=null;this.src='${IMG_FALLBACK}'">
         <div class="product-card-info">
             <p class="product-card-name">${translateName(p.nombre)}</p>
             <div class="product-card-price">
-                <span class="product-card-price-bs">${fmtBs(p.precio)}</span>
-                <span class="product-card-price-usd">${fmtUSD(p.precio)}</span>
+                <span class="product-card-price-value">${formatCurrency(p.precio)}</span>
             </div>
         </div>
+        <button class="product-card-add-btn" aria-label="Añadir al carrito">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
     </div>`;
 }
 function openProductDetail(productId) {
@@ -682,14 +713,28 @@ function setupEvents() {
     $('btn-refresh-orders')?.addEventListener('click', loadAndRenderOrders);
     
     // Currency Toggle Listeners
+    $('currency-toggle-home')?.addEventListener('change', (e) => {
+        State.monedaActiva = e.target.checked ? 'Bs' : 'USD';
+        syncCurrencyToggles();
+        renderHome();
+    });
     $('currency-toggle-cart')?.addEventListener('change', (e) => {
         State.monedaActiva = e.target.checked ? 'Bs' : 'USD';
+        syncCurrencyToggles();
         renderCart();
     });
     $('currency-toggle-checkout')?.addEventListener('change', (e) => {
         State.monedaActiva = e.target.checked ? 'Bs' : 'USD';
+        syncCurrencyToggles();
         renderCheckout();
     });
+
+    function syncCurrencyToggles() {
+        const checked = State.monedaActiva === 'Bs';
+        if ($('currency-toggle-home')) $('currency-toggle-home').checked = checked;
+        if ($('currency-toggle-cart')) $('currency-toggle-cart').checked = checked;
+        if ($('currency-toggle-checkout')) $('currency-toggle-checkout').checked = checked;
+    }
 
     $('btn-start-shopping')?.addEventListener('click', () => navigateTo('home'));
     
